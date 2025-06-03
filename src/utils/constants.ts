@@ -14,7 +14,20 @@ export const API_ENDPOINTS = {
 
 export const NAVIGATION = {
   HOME: 'Home',
-  SEARCH: 'Search',
-  SCHEDULE: 'Schedule',
+  BOOKMARKS: 'Bookmarks',
+  CHATBOT: 'ChatBot',
+  GRID: 'Grid',
   PROFILE: 'Profile',
+} as const;
+
+export const THEME = {
+  LIGHT: 'light',
+  DARK: 'dark',
+} as const;
+
+export const LAYOUT = {
+  TAB_BAR_HEIGHT: 60,
+  LOGO_SIZE: 60,
+  ICON_SIZE: 24,
+  BORDER_RADIUS: 15,
 } as const; 

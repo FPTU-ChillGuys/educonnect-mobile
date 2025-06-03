@@ -2,8 +2,9 @@ import { NAVIGATION } from '../utils/constants';
 
 export type RootStackParamList = {
   [NAVIGATION.HOME]: undefined;
-  [NAVIGATION.SEARCH]: undefined;
-  [NAVIGATION.SCHEDULE]: undefined;
+  [NAVIGATION.BOOKMARKS]: undefined;
+  [NAVIGATION.CHATBOT]: undefined;
+  [NAVIGATION.GRID]: undefined;
   [NAVIGATION.PROFILE]: undefined;
 };
 
