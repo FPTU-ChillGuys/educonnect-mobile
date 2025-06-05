@@ -1,11 +1,12 @@
 {
   "expo": {
-    "name": "educonnect-mobile-1",
-    "slug": "educonnect-mobile-1",
+    "name": "educonnect-mobile",
+    "slug": "educonnect-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "scheme": "educonnectmobile",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
