@@ -4,14 +4,9 @@ import { colors, spacing } from '../styles/theme';
 
 const ChatBotScreen = () => {
   return (
-    // <View style={styles.container}>
-    //   <Text style={styles.text}>Chat Bot</Text>
-    // </View>
-    <>
-      <div className="bg-slate-100 rounded-xl">
-        <p className="text-lg font-light">Welcome to Tailwind</p>
-      </div>
-    </>
+    <View style={styles.container}>
+      <Text style={styles.text}>Chat Bot</Text>
+    </View>
   );
 };
 

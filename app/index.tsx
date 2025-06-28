@@ -3,7 +3,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import { store } from '../components/store';
 import AppNavigator from '../components/navigation/AppNavigator';
-import './index.css';
 
 export default function App() {
   return (
