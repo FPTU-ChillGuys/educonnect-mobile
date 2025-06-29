@@ -16,24 +16,43 @@ export interface ConversationProps {
 const ChatBotScreen = () => {
   const [conversation, setConversation] = useState<ConversationProps>();
 
-  useEffect(() => {
-    conversationRepository
-      .getConversationsByUserId("33F41895-B601-4AA1-8DC4-8229A9D07008")
-      .then((response) => {
-          if (response.success == true){
+  const handleGetMessageById = async () => {
+       await conversationRepository
+        .getConversationsById("a9e6cf67-2d7e-43e3-7952-08ddb6e6b0f4")
+        .then((response) => {
+          if (response.success == true) {
             setConversation({
               conversationId: response.data.conversationId,
-              messages: new Map<string, MessageProps>(response.data.messages.map((msg: any) => [msg.messageId, { role: msg.role, message: msg.message }]))
-            })
+              messages: new Map<string, MessageProps>(
+                response.data.messages.map((msg: any) => [
+                  msg.messageId,
+                  { role: msg.role, message: msg.content },
+                ])
+              ),
+            });
           } else {
             console.error("Failed to fetch conversation:", response.message);
           }
-          console.log(conversation);
-      })
-      .catch((error) => {
-        console.error("Error fetching conversation:", error);
+        })
+        .catch((error) => {
+          console.error("Error fetching conversation:", error);
+        });
+    };
+
+  useEffect(() => {
+    console.log("ChatBotScreen mounted");
+    handleGetMessageById();
+  }, []);
+
+  useEffect(() => {
+    if (conversation) {
+      console.log("Conversation loaded:", conversation);
+      conversation.messages.forEach((msg, id) => {
+        console.log(`Message ID: ${id}, Role: ${msg.role}, Content: ${msg.message}`);
       });
-  });
+    }
+  }, [conversation]);
+
 
   return (
     <>

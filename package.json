@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@chatscope/chat-ui-kit-react": "^2.1.1",
     "@expo/vector-icons": "^14.1.0",
     "@microsoft/signalr": "^8.0.7",
     "@react-native-async-storage/async-storage": "^2.1.2",
