@@ -62,9 +62,9 @@ export class SignalRClient {
     }
   }
 
-  public sendMessage(conversationId: String, message: String) {
+  public sendMessage(userId : String, conversationId: String, message: String) {
     this.connection
-      ?.invoke("SendMessage", conversationId, message)
+      ?.invoke("SendMessage",userId, conversationId, message)
       .catch((err) => {
         console.error("Error sending message via SignalR:", err);
       });
