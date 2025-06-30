@@ -10,7 +10,7 @@ type MessageHandler = (
   message: String
 ) => void;
 
-export class SignalRClient {
+class SignalRClient {
   private connection: signalR.HubConnection | null = null;
   private messageHandlers: MessageHandler[] = [];
 
@@ -19,7 +19,7 @@ export class SignalRClient {
   public start() {
     if (this.connection) return;
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl("https://localhost:7231/chatbot")
+      .withUrl("https://10.0.2.2:7231/chatbot")
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
@@ -63,6 +63,9 @@ export class SignalRClient {
   }
 
   public sendMessage(userId : String, conversationId: String, message: String) {
+    if (this.connection?.state !== signalR.HubConnectionState.Connected) {
+      this.start();
+    }
     this.connection
       ?.invoke("SendMessage",userId, conversationId, message)
       .catch((err) => {
@@ -70,3 +73,5 @@ export class SignalRClient {
       });
   }
 }
+
+export const signalRClient = new SignalRClient();
