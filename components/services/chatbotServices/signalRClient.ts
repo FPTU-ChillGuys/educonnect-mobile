@@ -17,9 +17,9 @@ class SignalRClient {
   constructor() {}
 
   public start() {
-    if (this.connection) return;
+    if (this.connection?.state === signalR.HubConnectionState.Connected) return;
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl("https://10.0.2.2:7231/chatbot")
+      .withUrl("http://10.0.2.2:5269/chatbot")
       .configureLogging(signalR.LogLevel.Information)
       .build();
 
@@ -63,11 +63,12 @@ class SignalRClient {
   }
 
   public sendMessage(userId : String, conversationId: String, message: String) {
-    if (this.connection?.state !== signalR.HubConnectionState.Connected) {
+    if ((this.connection?.state === signalR.HubConnectionState.Disconnected) || this.connection === null || this.connection === undefined) {
+      console.log("SignalR connection not established, starting connection...");
       this.start();
     }
     this.connection
-      ?.invoke("SendMessage",userId, conversationId, message)
+      ?.invoke("SendMessageAsync",userId, conversationId, message)
       .catch((err) => {
         console.error("Error sending message via SignalR:", err);
       });

@@ -3,19 +3,18 @@ import { View, Text, StyleSheet } from "react-native";
 import { colors, spacing } from "../styles/theme";
 import { conversationRepository } from "../repository/conversationRepository";
 import { GiftedChat, IMessage } from "react-native-gifted-chat";
-import {
-  signalRClient,
-} from "../services/chatbotServices/signalRClient";
+import { signalRClient } from "../services/chatbotServices/signalRClient";
+import { messageRepository } from "../repository/messageRepository";
 
 // export interface MessageProps {
 //   role: "user" | "assistant";
 //   message: string;
 // }
 
-export interface ConversationProps {
-  conversationId: string;
-  messages: IMessage[];
-}
+// export interface ConversationProps {
+//   conversationId: string;
+//   messages: IMessage[];
+// }
 
 enum MessageRole {
   user = 1,
@@ -23,24 +22,43 @@ enum MessageRole {
 }
 
 const ChatBotScreen = () => {
-  const [conversation, setConversation] = useState<ConversationProps>();
+  const [messages, setMessages] = useState<IMessage[]>();
+  const conversationId = "a9e6cf67-2d7e-43e3-7952-08ddb6e6b0f4";
+  const userId = "33F41895-B601-4AA1-8DC4-8229A9D07008";
 
   const handler = (messageId: String, message: String) => {
-    setConversation((conversation) => {
-      if (!conversation) return conversation;
-      if (conversation.messages.find((msg) => msg._id == messageId)) {
-        streamingChatMessageHandler(messageId, message);
+    console.log(
+      "SignalR message received with ID:",
+      messageId,
+      "and text:",
+      message
+    );
+    setMessages((messages) => {
+      if (!messages) {
+        console.log("No messages found, returning empty messages.");
+        return messages;
+      }
+      if (messages.find((msg) => msg._id == messageId)) {
+        console.log("Message already exists in conversation, updating text.");
+        return streamingChatMessageHandler(messageId, message, messages);
       } else {
-        addChatMessageForAssistant(assistantMessage(messageId, message));
+        console.log("Adding new assistant message to conversation.");
+        return addChatMessageForAssistant(assistantMessage(messageId, message), messages);
       }
     });
   };
 
   const assistantMessage = (messageId: String, message: String): IMessage => {
+    console.log(
+      "Creating assistant message with ID:",
+      messageId ?? "",
+      "and text:",
+      message ?? ""
+    );
     return {
       _id: messageId.toString(),
-      text: message.toString(),
-      createdAt : new Date(),
+      text: message?.toString(),
+      createdAt: new Date(),
       user: {
         _id: MessageRole.assistant, // Assuming user ID 1 for user and 2 for assistant
         name: "Assistant",
@@ -48,56 +66,61 @@ const ChatBotScreen = () => {
     };
   };
 
-  const addChatMessageForAssistant = (message: IMessage) => {
-    setConversation((conversation) => {
-      if (!conversation) return conversation;
-      return {
-        conversationId: conversation.conversationId,
-        messages: GiftedChat.append(conversation.messages, [message]),
-      };
-    });
+  const addChatMessageForAssistant = (message: IMessage, messages :IMessage[]) => {
+    console.log("Adding assistant message:", message);
+      if (!messages) {
+        console.log("No conversation found, returning empty conversation.");
+      }
+      const appendedChat =  GiftedChat.append(messages, [message]);
+      console.log("Appended chat:", appendedChat);
+      return appendedChat.map((msg) => {
+        if (msg._id === message._id) {
+          console.log("Updating message text to:", message.text);
+          return { ...msg, text: message.text?.toString() ?? "" };
+        }
+        return msg;
+      });
   };
 
-  const streamingChatMessageHandler = (messageId: String, message: String) => {
-    let foundMessage = conversation?.messages.find(
-      (msg) => msg._id === messageId
-    );
+  const streamingChatMessageHandler = (messageId: String, message: String, messages : IMessage[]) => {
+    let foundMessage = messages?.find((msg) => msg._id === messageId);
     if (foundMessage) {
-      foundMessage.text = message.toString();
+      console.log("Found message:", foundMessage);
+      if (message !== undefined) {
+        console.log("Updating existing message text to:", message?.toString());
+        foundMessage.text = message?.toString();
+      } else {
+        console.log("Message text is undefined in here!");
+      }
     }
-
-    setConversation((con) => {
-      if (!con) return con;
-      return {
-        conversationId: con.conversationId,
-        messages: con.messages.map((msg) =>
-          msg._id === messageId ? { ...msg, text: message.toString() } : msg
-        ),
+    console.log("Updating conversation with new message text:", message);
+      if (!messages) {
+        console.log("No messages found, returning empty messages.");
+        return messages;
       };
-    });
+      return messages.map((msg) =>
+        msg._id === messageId ? { ...msg, text: foundMessage?.text ? foundMessage.text.toString() : "" } : msg
+      );
   };
 
   const handleGetMessageById = async () => {
-    await conversationRepository
-      .getConversationsById("a9e6cf67-2d7e-43e3-7952-08ddb6e6b0f4")
+    await messageRepository
+      .getMessagesByConversationId("a9e6cf67-2d7e-43e3-7952-08ddb6e6b0f4")
       .then((response) => {
+        console.log(response);
         if (response.success == true) {
-          setConversation({
-            conversationId: response.data.conversationId,
-            messages: response.data.messages.map((msg: any) => ({
+          setMessages(
+            response.data.map((msg: any) => ({
               _id: msg.messageId,
               text: msg.content,
               createdAt: new Date(msg.createdAt),
               // image: "https://plus.unsplash.com/premium_photo-1664474619075-644dd191935f?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
               user: {
-                _id:
-                  msg.role === "User"
-                    ? MessageRole.user
-                    : MessageRole.assistant, // Assuming user ID 1 for user and 2 for assistant
+                _id: msg.role === "User" ? userId : MessageRole.assistant, // Assuming user ID 1 for user and 2 for assistant
                 name: msg.role === "User" ? "User" : "Assistant",
               },
-            })),
-          });
+            }))
+          );
         } else {
           console.error("Failed to fetch conversation:", response.message);
         }
@@ -113,43 +136,42 @@ const ChatBotScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (conversation) {
-      console.log("Conversation loaded:", conversation);
+    if (messages) {
+      console.log("Conversation loaded:", messages);
     }
-  }, [conversation]);
+  }, [messages]);
 
   //Them handler
   useEffect(() => {
+    console.log("Subscribing to SignalR messages");
     signalRClient.subscribe(handler);
     return () => {
+      console.log("Unscribing from SignalR messages");
       signalRClient.unsubscribe(handler);
     };
   }, []);
 
   const onSend = useCallback((newMessages: IMessage[]) => {
     console.log("New messages sent:", newMessages);
-    setConversation((conversation) => {
-      if (!conversation) return conversation;
-      return {
-        conversationId: conversation.conversationId,
-        messages: GiftedChat.append(conversation.messages, newMessages),
-      };
+    setMessages((messages) => {
+      if (!messages) return messages;
+      return  GiftedChat.append(messages, newMessages);
     });
+    console.log("After Append ", messages);
     signalRClient.sendMessage(
-      newMessages[0].user._id.toString(),
-      conversation?.conversationId || "",
+      newMessages[0].user._id?.toString(),
+      conversationId ?? "",
       newMessages[0].text
     );
   }, []);
-
   return (
     <>
       <View className="flex-1 justify-center bg-white mb-20">
         <GiftedChat
-          messages={conversation?.messages || []}
+          messages={messages || []}
           onSend={(messages) => onSend(messages)}
           user={{
-            _id: MessageRole.user, // Assuming user ID 1 for the current user
+            _id: userId, // Assuming user ID 1 for the current user
             name: "User",
           }}
           showUserAvatar
