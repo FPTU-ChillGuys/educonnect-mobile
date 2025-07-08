@@ -22,7 +22,7 @@ enum MessageRole {
   assistant = 2,
 }
 
-const ChatBotScreen = () => {
+const ChatBotScreen = ({route} : any) => {
   const [messages, setMessages] = useState<IMessage[]>();
   const [conversationId, setConversationId] = useState<String>(
     "a9e6cf67-2d7e-43e3-7952-08ddb6e6b0f4"
