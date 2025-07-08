@@ -5,6 +5,7 @@ import { conversationRepository } from "../repository/conversationRepository";
 import { GiftedChat, IMessage } from "react-native-gifted-chat";
 import { signalRClient } from "../services/chatbotServices/signalRClient";
 import { messageRepository } from "../repository/messageRepository";
+import Markdown from "react-native-markdown-display";
 
 // export interface MessageProps {
 //   role: "user" | "assistant";
@@ -23,8 +24,10 @@ enum MessageRole {
 
 const ChatBotScreen = () => {
   const [messages, setMessages] = useState<IMessage[]>();
-  const conversationId = "a9e6cf67-2d7e-43e3-7952-08ddb6e6b0f4";
-  const userId = "33F41895-B601-4AA1-8DC4-8229A9D07008";
+  const conversationId = useState<String>(
+    "a9e6cf67-2d7e-43e3-7952-08ddb6e6b0f4"
+  );
+  const userId = useState<String>("33F41895-B601-4AA1-8DC4-8229A9D07008");
 
   const handler = (messageId: String, message: String) => {
     console.log(
@@ -43,7 +46,10 @@ const ChatBotScreen = () => {
         return streamingChatMessageHandler(messageId, message, messages);
       } else {
         console.log("Adding new assistant message to conversation.");
-        return addChatMessageForAssistant(assistantMessage(messageId, message), messages);
+        return addChatMessageForAssistant(
+          assistantMessage(messageId, message),
+          messages
+        );
       }
     });
   };
@@ -66,41 +72,49 @@ const ChatBotScreen = () => {
     };
   };
 
-  const addChatMessageForAssistant = (message: IMessage, messages :IMessage[]) => {
+  const addChatMessageForAssistant = (
+    message: IMessage,
+    messages: IMessage[]
+  ) => {
     console.log("Adding assistant message:", message);
-      if (!messages) {
-        console.log("No conversation found, returning empty conversation.");
+    if (!messages) {
+      console.log("No conversation found, returning empty conversation.");
+    }
+    const appendedChat = GiftedChat.append(messages, [message]);
+    console.log("Appended chat:", appendedChat);
+    return appendedChat.map((msg) => {
+      if (msg._id === message._id) {
+        console.log("Updating message text to:", message.text);
+        return { ...msg, text: message.text?.toString() ?? "" };
       }
-      const appendedChat =  GiftedChat.append(messages, [message]);
-      console.log("Appended chat:", appendedChat);
-      return appendedChat.map((msg) => {
-        if (msg._id === message._id) {
-          console.log("Updating message text to:", message.text);
-          return { ...msg, text: message.text?.toString() ?? "" };
-        }
-        return msg;
-      });
+      return msg;
+    });
   };
 
-  const streamingChatMessageHandler = (messageId: String, message: String, messages : IMessage[]) => {
+  const streamingChatMessageHandler = (
+    messageId: String,
+    message: String,
+    messages: IMessage[]
+  ) => {
     let foundMessage = messages?.find((msg) => msg._id === messageId);
     if (foundMessage) {
-      console.log("Found message:", foundMessage);
       if (message !== undefined) {
-        console.log("Updating existing message text to:", message?.toString());
         foundMessage.text = message?.toString();
       } else {
         console.log("Message text is undefined in here!");
       }
     }
-    console.log("Updating conversation with new message text:", message);
-      if (!messages) {
-        console.log("No messages found, returning empty messages.");
-        return messages;
-      };
-      return messages.map((msg) =>
-        msg._id === messageId ? { ...msg, text: foundMessage?.text ? foundMessage.text.toString() : "" } : msg
-      );
+    if (!messages) {
+      return messages;
+    }
+    return messages.map((msg) =>
+      msg._id === messageId
+        ? {
+            ...msg,
+            text: foundMessage?.text ? foundMessage.text.toString() : "",
+          }
+        : msg
+    );
   };
 
   const handleGetMessageById = async () => {
@@ -155,12 +169,12 @@ const ChatBotScreen = () => {
     console.log("New messages sent:", newMessages);
     setMessages((messages) => {
       if (!messages) return messages;
-      return  GiftedChat.append(messages, newMessages);
+      return GiftedChat.append(messages, newMessages);
     });
     console.log("After Append ", messages);
     signalRClient.sendMessage(
       newMessages[0].user._id?.toString(),
-      conversationId ?? "",
+      conversationId?.toString() ?? "",
       newMessages[0].text
     );
   }, []);
@@ -171,11 +185,14 @@ const ChatBotScreen = () => {
           messages={messages || []}
           onSend={(messages) => onSend(messages)}
           user={{
-            _id: userId, // Assuming user ID 1 for the current user
+            _id: userId?.toString(), // Assuming user ID 1 for the current user
             name: "User",
           }}
           showUserAvatar
           alwaysShowSend
+          renderMessageText={(props) => (
+            <Markdown>{props.currentMessage.text || ""}</Markdown>
+          )}
         />
       </View>
     </>
