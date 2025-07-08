@@ -31,6 +31,13 @@ const ChatBotScreen = ({route} : any) => {
     "33F41895-B601-4AA1-8DC4-8229A9D07008"
   );
 
+  
+  useEffect(() => {
+      setConversationId(route?.params?.conversationId ?? conversationId);
+      console.log("Conversation ID set to:", route?.params?.conversationId);
+  }, []);
+  
+
   const handler = (messageId: String, message: String) => {
     console.log(
       "SignalR message received with ID:",
@@ -40,14 +47,11 @@ const ChatBotScreen = ({route} : any) => {
     );
     setMessages((messages) => {
       if (!messages) {
-        console.log("No messages found, returning empty messages.");
         return messages;
       }
       if (messages.find((msg) => msg._id == messageId)) {
-        console.log("Message already exists in conversation, updating text.");
         return streamingChatMessageHandler(messageId, message, messages);
       } else {
-        console.log("Adding new assistant message to conversation.");
         return addChatMessageForAssistant(
           assistantMessage(messageId, message),
           messages
@@ -78,15 +82,12 @@ const ChatBotScreen = ({route} : any) => {
     message: IMessage,
     messages: IMessage[]
   ) => {
-    console.log("Adding assistant message:", message);
     if (!messages) {
       console.log("No conversation found, returning empty conversation.");
     }
     const appendedChat = GiftedChat.append(messages, [message]);
-    console.log("Appended chat:", appendedChat);
     return appendedChat.map((msg) => {
       if (msg._id === message._id) {
-        console.log("Updating message text to:", message.text);
         return { ...msg, text: message.text?.toString() ?? "" };
       }
       return msg;
@@ -121,9 +122,8 @@ const ChatBotScreen = ({route} : any) => {
 
   const handleGetMessageById = async () => {
     await messageRepository
-      .getMessagesByConversationId("a9e6cf67-2d7e-43e3-7952-08ddb6e6b0f4")
+      .getMessagesByConversationId(route?.params?.conversationId ?? conversationId)
       .then((response) => {
-        console.log(response);
         if (response.success == true) {
           setMessages(
             response.data.map((msg: any) => ({
@@ -151,11 +151,11 @@ const ChatBotScreen = ({route} : any) => {
     handleGetMessageById();
   }, []);
 
-  useEffect(() => {
-    if (messages) {
-      console.log("Conversation loaded:", messages);
-    }
-  }, [messages]);
+  // useEffect(() => {
+  //   if (messages) {
+  //     console.log("Conversation loaded:", messages);
+  //   }
+  // }, [messages]);
 
   //Them handler
   useEffect(() => {
@@ -168,12 +168,10 @@ const ChatBotScreen = ({route} : any) => {
   }, []);
 
   const onSend = useCallback((newMessages: IMessage[]) => {
-    console.log("New messages sent:", newMessages);
     setMessages((messages) => {
       if (!messages) return messages;
       return GiftedChat.append(messages, newMessages);
     });
-    console.log("After Append ", messages);
     signalRClient.sendMessage(
       newMessages[0].user._id?.toString(),
       conversationId?.toString() ?? "",

@@ -30,6 +30,7 @@ import ScheduleScreen from "../screens/ScheduleScreen";
 import { colors } from "../styles/theme";
 import { NAVIGATION } from "../utils/constants";
 import ChatBotHistoryScreen from "../screens/ChatBotHistoryScreen";
+import uuid from 'react-native-uuid';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -70,11 +71,13 @@ const ChatbotStack = () => {
               <Text style={{ marginLeft: 15 }}> ☰</Text>
             </TouchableOpacity>
           ),
-          // headerRight: () => (
-          //   <TouchableOpacity onPress={() => navigation.navigate("Edit")}>
-          //     <Text style={{ marginRight: 15 }}>✏️</Text>
-          //   </TouchableOpacity>
-          // ),
+          headerRight: () => (
+            <TouchableOpacity onPress={() => navigation.replace(NAVIGATION.CHATBOT, {
+              conversationId: uuid.v4(), // Generate a new conversation ID
+            })}>
+              <Ionicons name="chatbubbles" size={24} color={colors.primary} style={{ marginRight: 15 }} />
+            </TouchableOpacity>
+          ),
         })}
       />
       <Stack.Screen
