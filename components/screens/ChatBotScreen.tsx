@@ -6,6 +6,7 @@ import { GiftedChat, IMessage } from "react-native-gifted-chat";
 import { signalRClient } from "../services/chatbotServices/signalRClient";
 import { messageRepository } from "../repository/messageRepository";
 import Markdown from "react-native-markdown-display";
+import uuid from 'react-native-uuid';
 
 // export interface MessageProps {
 //   role: "user" | "assistant";
@@ -24,17 +25,16 @@ enum MessageRole {
 
 const ChatBotScreen = ({route} : any) => {
   const [messages, setMessages] = useState<IMessage[]>();
-  const [conversationId, setConversationId] = useState<String>(
-    "a9e6cf67-2d7e-43e3-7952-08ddb6e6b0f4"
-  );
+  // const [conversationId, setConversationId] = useState<String>();
   const [userId, setUserId] = useState<String>(
     "33F41895-B601-4AA1-8DC4-8229A9D07008"
   );
 
+  const conversationId = route?.params?.conversationId != undefined ? route?.params?.conversationId : uuid.v4().toString();
+
   
   useEffect(() => {
-      setConversationId(route?.params?.conversationId);
-      console.log("Conversation ID set to:", route?.params?.conversationId);
+      console.log("Conversation ID set to:", conversationId);
   }, []);
   
 
@@ -121,8 +121,9 @@ const ChatBotScreen = ({route} : any) => {
   };
 
   const handleGetMessageById = async () => {
+    console.log("Fetching messages for conversation ID:", conversationId);
     await messageRepository
-      .getMessagesByConversationId(route?.params?.conversationId)
+      .getMessagesByConversationId(conversationId)
       .then((response) => {
         if (response.success == true) {
           setMessages(
@@ -174,7 +175,7 @@ const ChatBotScreen = ({route} : any) => {
     });
     signalRClient.sendMessage(
       newMessages[0].user._id?.toString(),
-      route?.params?.conversationId,
+      conversationId,
       newMessages[0].text
     );
   }, []);
