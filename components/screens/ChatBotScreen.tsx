@@ -33,7 +33,7 @@ const ChatBotScreen = ({route} : any) => {
 
   
   useEffect(() => {
-      setConversationId(route?.params?.conversationId ?? conversationId);
+      setConversationId(route?.params?.conversationId);
       console.log("Conversation ID set to:", route?.params?.conversationId);
   }, []);
   
@@ -122,7 +122,7 @@ const ChatBotScreen = ({route} : any) => {
 
   const handleGetMessageById = async () => {
     await messageRepository
-      .getMessagesByConversationId(route?.params?.conversationId ?? conversationId)
+      .getMessagesByConversationId(route?.params?.conversationId)
       .then((response) => {
         if (response.success == true) {
           setMessages(
@@ -174,7 +174,7 @@ const ChatBotScreen = ({route} : any) => {
     });
     signalRClient.sendMessage(
       newMessages[0].user._id?.toString(),
-      conversationId?.toString() ?? "",
+      route?.params?.conversationId,
       newMessages[0].text
     );
   }, []);

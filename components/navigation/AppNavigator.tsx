@@ -67,7 +67,7 @@ const ChatbotStack = () => {
           headerShown: true,
           headerTitleAlign: 'center',
           headerLeft: () => (
-            <TouchableOpacity onPress={() => navigation.navigate(NAVIGATION.CHATBOTHISTORY)}>
+            <TouchableOpacity onPress={() => navigation.push(NAVIGATION.CHATBOTHISTORY)}>
               <Text style={{ marginLeft: 15 }}> ☰</Text>
             </TouchableOpacity>
           ),
@@ -132,6 +132,7 @@ const AppNavigator = () => {
       <Tab.Screen
         name={NAVIGATION.CHATBOT}
         component={ChatbotStack}
+        initialParams={{ conversationId: uuid.v4() }} // Generate a new conversation ID
         options={{
           tabBarIcon: () => <CenterLogo />,
         }}
