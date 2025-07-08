@@ -18,6 +18,7 @@ export const NAVIGATION = {
   CHATBOT: 'ChatBot',
   GRID: 'Grid',
   PROFILE: 'Profile',
+  CHATBOTHISTORY : 'ChatBotHistory',
 } as const;
 
 export const THEME = {

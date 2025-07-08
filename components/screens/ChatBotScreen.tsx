@@ -24,10 +24,12 @@ enum MessageRole {
 
 const ChatBotScreen = () => {
   const [messages, setMessages] = useState<IMessage[]>();
-  const conversationId = useState<String>(
+  const [conversationId, setConversationId] = useState<String>(
     "a9e6cf67-2d7e-43e3-7952-08ddb6e6b0f4"
   );
-  const userId = useState<String>("33F41895-B601-4AA1-8DC4-8229A9D07008");
+  const [userId, setUserId] = useState<String>(
+    "33F41895-B601-4AA1-8DC4-8229A9D07008"
+  );
 
   const handler = (messageId: String, message: String) => {
     console.log(
