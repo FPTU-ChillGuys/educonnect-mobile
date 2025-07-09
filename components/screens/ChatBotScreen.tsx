@@ -37,7 +37,7 @@ const ChatBotScreen = ({route} : any) => {
       console.log("Conversation ID set to:", conversationId);
   }, []);
   
-
+  // Handler for incoming messages from SignalR
   const handler = (messageId: String, message: String) => {
     console.log(
       "SignalR message received with ID:",
@@ -60,6 +60,8 @@ const ChatBotScreen = ({route} : any) => {
     });
   };
 
+
+  // Function to create an assistant message
   const assistantMessage = (messageId: String, message: String): IMessage => {
     console.log(
       "Creating assistant message with ID:",
@@ -78,6 +80,7 @@ const ChatBotScreen = ({route} : any) => {
     };
   };
 
+  // Function to add a chat message for the assistant
   const addChatMessageForAssistant = (
     message: IMessage,
     messages: IMessage[]
@@ -94,6 +97,7 @@ const ChatBotScreen = ({route} : any) => {
     });
   };
 
+  // Handler for streaming chat messages
   const streamingChatMessageHandler = (
     messageId: String,
     message: String,
@@ -120,6 +124,7 @@ const ChatBotScreen = ({route} : any) => {
     );
   };
 
+  // Fetch messages by conversation ID
   const handleGetMessageById = async () => {
     console.log("Fetching messages for conversation ID:", conversationId);
     await messageRepository

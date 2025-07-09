@@ -12,18 +12,26 @@ import { FlatList } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function ChatBotHistoryScreen({ navigation }: any) {
-  const [conversationIds, setConversationId] = useState<string[]>([]);
+  const [conversationIdAndTitleList, setConversationIdAndTitleList] = useState<
+    { conversationId: string; title: string }[]
+  >([]);
 
-  const handleGetMessageById = async () => {
+  const [searchText, setSearchText] = useState("");
+
+  const filteredConversations = conversationIdAndTitleList.filter((item) =>
+    item.title.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  const handleGetAllConversationIdAndTitle = async () => {
     console.log("Fetching conversation IDs...");
     await conversationRepository
       .getAllConversationIdByUserId("33F41895-B601-4AA1-8DC4-8229A9D07008")
       .then((response) => {
         if (response.success) {
-          setConversationId(response.data);
+          setConversationIdAndTitleList(response.data);
           console.log(
             "Conversation IDs fetched successfully:",
-            conversationIds
+            conversationIdAndTitleList
           );
         }
       })
@@ -33,7 +41,7 @@ export default function ChatBotHistoryScreen({ navigation }: any) {
   };
 
   useEffect(() => {
-    handleGetMessageById();
+    handleGetAllConversationIdAndTitle();
   }, []);
 
   const renderHeader = () => (
@@ -41,9 +49,11 @@ export default function ChatBotHistoryScreen({ navigation }: any) {
       <View className="flex-1 flex-row items-center bg-gray-100 rounded-full px-3 py-2">
         <Ionicons name="search" size={20} color="#999" />
         <TextInput
-          placeholder="Tìm kiếm trong nhật ký của Grok"
+          placeholder="Tìm kiếm"
           placeholderTextColor="#999"
           className="flex-1 ml-2 text-base"
+          value={searchText}
+          onChangeText={setSearchText}
         />
       </View>
       <TouchableOpacity className="ml-3">
@@ -58,14 +68,16 @@ export default function ChatBotHistoryScreen({ navigation }: any) {
     </Text>
   );
 
-  const renderItem: ListRenderItem<string> = ({ item: conversationId }) => (
+  const renderItem: ListRenderItem<any> = ({ item }) => (
     <TouchableOpacity
       className="flex-row justify-between items-center px-4 py-2 border-b border-gray-200"
       onPress={() =>
-        navigation.navigate("ChatBot", { conversationId: conversationId })
+        navigation.navigate("ChatBot", { conversationId: item.conversationId })
       }
     >
-      <Text className="text-base text-black">{conversationId}</Text>
+      <View className="flex-col">
+        <Text className="text-lg text-black">{item.title}</Text>
+      </View>
     </TouchableOpacity>
   );
 
@@ -75,9 +87,9 @@ export default function ChatBotHistoryScreen({ navigation }: any) {
         {renderHeader()}
         {renderSectionTitle()}
         <FlatList
-          data={conversationIds}
+          data={filteredConversations}
           renderItem={renderItem}
-          keyExtractor={(id) => id}
+          keyExtractor={(id) => id.conversationId}
         />
       </SafeAreaView>
     </>
