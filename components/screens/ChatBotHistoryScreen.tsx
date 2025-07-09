@@ -56,9 +56,6 @@ export default function ChatBotHistoryScreen({ navigation }: any) {
           onChangeText={setSearchText}
         />
       </View>
-      <TouchableOpacity className="ml-3">
-        <Ionicons name="arrow-forward" size={20} color="#000" />
-      </TouchableOpacity>
     </View>
   );
 

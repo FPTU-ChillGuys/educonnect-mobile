@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../styles/theme";
 import { conversationRepository } from "../repository/conversationRepository";
 import { GiftedChat, IMessage } from "react-native-gifted-chat";
 import { signalRClient } from "../services/chatbotServices/signalRClient";
 import { messageRepository } from "../repository/messageRepository";
 import Markdown from "react-native-markdown-display";
-import uuid from 'react-native-uuid';
+import uuid from "react-native-uuid";
+import { NAVIGATION } from "../utils/constants";
 
 // export interface MessageProps {
 //   role: "user" | "assistant";
@@ -23,20 +25,56 @@ enum MessageRole {
   assistant = 2,
 }
 
-const ChatBotScreen = ({route} : any) => {
+const ChatBotScreen = ({ route, navigation }: any) => {
   const [messages, setMessages] = useState<IMessage[]>();
   // const [conversationId, setConversationId] = useState<String>();
   const [userId, setUserId] = useState<String>(
     "33F41895-B601-4AA1-8DC4-8229A9D07008"
   );
 
-  const conversationId = route?.params?.conversationId != undefined ? route?.params?.conversationId : uuid.v4().toString();
+  const conversationId =
+    route?.params?.conversationId != undefined
+      ? route?.params?.conversationId
+      : uuid.v4().toString();
 
-  
   useEffect(() => {
-      console.log("Conversation ID set to:", conversationId);
+    console.log("Conversation ID set to:", conversationId);
   }, []);
-  
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      headerTitleAlign: "center",
+      headerLeft: () => (
+        <TouchableOpacity
+          onPress={() => navigation.push(NAVIGATION.CHATBOTHISTORY)}
+        >
+          <Text style={{ marginLeft: 15 }}>☰</Text>
+        </TouchableOpacity>
+      ),
+      ...(messages && messages.length > 0
+        ? {
+            headerRight: () => (
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.replace(NAVIGATION.CHATBOT, {
+                    conversationId: uuid.v4(), // Generate a new conversation ID
+                  })
+                }
+              >
+                <Ionicons
+                  name="chatbubbles"
+                  size={24}
+                  color={colors.primary}
+                  style={{ marginRight: 15 }}
+                />
+              </TouchableOpacity>
+            ),
+          }
+        : {}),
+    });
+  }, [navigation, messages]);
+
   // Handler for incoming messages from SignalR
   const handler = (messageId: String, message: String) => {
     console.log(
@@ -59,7 +97,6 @@ const ChatBotScreen = ({route} : any) => {
       }
     });
   };
-
 
   // Function to create an assistant message
   const assistantMessage = (messageId: String, message: String): IMessage => {
@@ -173,6 +210,7 @@ const ChatBotScreen = ({route} : any) => {
     };
   }, []);
 
+  // Function to handle sending messages
   const onSend = useCallback((newMessages: IMessage[]) => {
     setMessages((messages) => {
       if (!messages) return messages;
@@ -184,6 +222,7 @@ const ChatBotScreen = ({route} : any) => {
       newMessages[0].text
     );
   }, []);
+
   return (
     <>
       <View className="flex-1 justify-center bg-white mb-20">

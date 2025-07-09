@@ -63,22 +63,22 @@ const ChatbotStack = () => {
       <Stack.Screen
         name={NAVIGATION.CHATBOT}
         component={ChatBotScreen}
-        options={({ navigation }) => ({
-          headerShown: true,
-          headerTitleAlign: 'center',
-          headerLeft: () => (
-            <TouchableOpacity onPress={() => navigation.push(NAVIGATION.CHATBOTHISTORY)}>
-              <Text style={{ marginLeft: 15 }}> ☰</Text>
-            </TouchableOpacity>
-          ),
-          headerRight: () => (
-            <TouchableOpacity onPress={() => navigation.replace(NAVIGATION.CHATBOT, {
-              conversationId: uuid.v4(), // Generate a new conversation ID
-            })}>
-              <Ionicons name="chatbubbles" size={24} color={colors.primary} style={{ marginRight: 15 }} />
-            </TouchableOpacity>
-          ),
-        })}
+        // options={({ navigation }) => ({
+        //   headerShown: true,
+        //   headerTitleAlign: 'center',
+        //   headerLeft: () => (
+        //     <TouchableOpacity onPress={() => navigation.push(NAVIGATION.CHATBOTHISTORY)}>
+        //       <Text style={{ marginLeft: 15 }}> ☰</Text>
+        //     </TouchableOpacity>
+        //   ),
+        //   headerRight: () => (
+        //     <TouchableOpacity onPress={() => navigation.replace(NAVIGATION.CHATBOT, {
+        //       conversationId: uuid.v4(), // Generate a new conversation ID
+        //     })}>
+        //       <Ionicons name="chatbubbles" size={24} color={colors.primary} style={{ marginRight: 15 }} />
+        //     </TouchableOpacity>
+        //   ),
+        // })}
       />
       <Stack.Screen
         name={NAVIGATION.CHATBOTHISTORY}
