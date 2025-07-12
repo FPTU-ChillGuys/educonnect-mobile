@@ -1,22 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, FlatList, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import { useDispatch, useSelector } from 'react-redux';
+import { setNotification } from '../store/slices/notificationSlice';
+import { RootState } from '../store';
+import { registerForPushNotificationsAsync } from '../services/notificationHelper';
 
-const notifications = [
-  {
-    id: '1',
-    title: 'Thông báo : học sinh Nguyễn Văn Bình vắng mặt hôm 30/4',
-    icon: require('../../assets/BOT.png'),
-  },
-  { id: '2', placeholder: true },
-  { id: '3', placeholder: true },
-  { id: '4', placeholder: true },
-  { id: '5', placeholder: true },
-];
+const BOT_ICON = require('../../assets/BOT.png');
 
 const BookmarksScreen = () => {
-  const navigation: any = useNavigation();
+  const dispatch = useDispatch();
+  const notification = useSelector((state: RootState) => state.notification) as { title: string | null; body: string | null };
+  const navigation = useNavigation();
+  const [deviceToken, setDeviceToken] = useState('');
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener(notificationObj => {
+      let { title, body } = notificationObj.request.content;
+      if (title == null) title = '';
+      if (body == null) body = '';
+      dispatch(setNotification({ title, body }));
+    });
+    return () => subscription.remove();
+  }, [dispatch]);
+
+  useEffect(() => {
+    registerForPushNotificationsAsync().then(token => {
+      if (token) setDeviceToken(token);
+    });
+  }, []);
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -36,23 +52,23 @@ const BookmarksScreen = () => {
         />
       </View>
       {/* Notification list */}
-      <FlatList
-        data={notifications}
-        keyExtractor={item => item.id}
-        contentContainerStyle={{ padding: 16 }}
-        renderItem={({ item }) =>
-          item.placeholder ? (
-            <View style={styles.placeholder} />
-          ) : (
-            <TouchableOpacity onPress={() => navigation.navigate('NotifyDetail')}>
-              <View style={styles.notifyItem}>
-                <Image source={item.icon} style={styles.notifyIcon} />
-                <Text style={styles.notifyText}>{item.title}</Text>
-              </View>
-            </TouchableOpacity>
-          )
-        }
-      />
+      {notification.title ? (
+        <TouchableOpacity onPress={() => (navigation as any).navigate('NotifyDetail', { body: notification.body || '' })}>
+          <View style={styles.notifyItem}>
+            <Image source={BOT_ICON} style={styles.notifyIcon} />
+            <Text style={styles.notifyText}>{notification.title || ''}</Text>
+          </View>
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.placeholder} />
+      )}
+      {/* Device Token */}
+      {deviceToken ? (
+        <View style={{ backgroundColor: '#fff', margin: 12, padding: 10, borderRadius: 8 }}>
+          <Text style={{ fontSize: 13, color: '#3578e5', fontWeight: 'bold' }}>Device Token:</Text>
+          <Text selectable style={{ fontSize: 12, color: '#222' }}>{deviceToken}</Text>
+        </View>
+      ) : null}
     </View>
   );
 };

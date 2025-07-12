@@ -21,11 +21,39 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.ChillGuys.Educonnect"
     },
     "web": {
       "favicon": "./assets/favicon.png",
-       "bundler": "metro"
-    }
+      "bundler": "metro"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0a16674f-f4aa-4e00-92e8-6007855fd48c"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-web-browser",
+      [
+        "expo-notifications",
+        {
+          "color": "#ffffff"
+        }
+      ],
+      [
+        "@react-native-firebase/app",
+        {
+          "android_package_name": "com.ChillGuys.Educonnect"
+        }
+      ],
+      [
+        "@react-native-firebase/messaging",
+        {
+          "android_package_name": "com.ChillGuys.Educonnect"
+        }
+      ]
+    ]
   }
 }

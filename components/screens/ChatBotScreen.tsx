@@ -33,7 +33,7 @@ const ChatBotScreen = () => {
       .catch((error) => {
         console.error("Error fetching conversation:", error);
       });
-  });
+  }, []);
 
   return (
     <>

@@ -1,11 +1,12 @@
 import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import { store } from '../components/store';
 import AppNavigator from '../components/navigation/AppNavigator';
 import "./global.css"
 
-export default function App() {
+function App() {
   return (
     <Provider store={store}>
       <SafeAreaProvider>
@@ -14,3 +15,5 @@ export default function App() {
     </Provider>
   );
 }
+
+export default App;

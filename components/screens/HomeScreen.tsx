@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome5, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
+import { useNavigation } from '@react-navigation/native';
 
 const features = [
   { icon: <MaterialIcons name="emoji-events" size={32} />, label: 'Bảng điểm' },
@@ -12,6 +15,13 @@ const features = [
 ];
 
 export default function HomeScreen() {
+  const user = useSelector((state: RootState) => state.auth.user);
+  const children = useSelector((state: RootState) => state.auth.children || []);
+  const userName = user?.fullName || user?.name || 'bạn';
+  const navigation = useNavigation();
+  const [selectedChildId, setSelectedChildId] = useState(children[0]?.studentId || '');
+  const selectedChild = children.find(child => child.studentId === selectedChildId);
+  console.log('Children in HomeScreen:', children);
   return (
     <View style={styles.container}>
       {/* Header xanh */}
@@ -21,8 +31,8 @@ export default function HomeScreen() {
           style={styles.parentAvatar}
         />
         <View style={{ marginLeft: 10, flex: 1 }}>
-          <Text style={styles.helloText}>Xin chào,</Text>
-          <Text style={styles.phoneText}>0852630613</Text>
+          <Text style={styles.helloText}>Xin chào, {userName}</Text>
+          <Text style={styles.phoneText}>{user?.phoneNumber || ''}</Text>
         </View>
         <TouchableOpacity style={{ marginRight: 10 }}>
           <Feather name="edit-2" size={18} color="#fff" />
@@ -32,33 +42,47 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Card thông tin con */}
-      <View style={styles.childCard}>
-        <Image
-          source={{ uri: 'https://i.pravatar.cc/60?img=2' }}
-          style={styles.childAvatar}
-        />
-        <View style={{ flex: 1, marginLeft: 10 }}>
-          <Text style={styles.childName}>Lê Phát Đạt</Text>
-          <TouchableOpacity>
-            <Text style={styles.detailText}>Xem chi tiết</Text>
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity style={styles.selectBtn}>
-          <Text style={{ color: '#3578e5', fontWeight: 'bold' }}>Chọn con</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Grid features + settings icon */}
-      <View style={styles.gridWrap}>
-        <View style={styles.grid}>
-          {features.map((item, idx) => (
-            <View style={styles.gridItem} key={idx}>
-              {item.icon}
-              <Text style={styles.gridLabel}>{item.label}</Text>
-            </View>
+      {/* Danh sách children dạng card chọn */}
+      {children.length > 0 && (
+        <View style={{ marginTop: 12 }}>
+          <Text style={{ marginLeft: 18, marginBottom: 6, color: '#3578e5', fontWeight: 'bold' }}>Chọn con:</Text>
+          {children.map(child => (
+            <TouchableOpacity
+              key={child.studentId}
+              style={[
+                styles.childCard,
+                { borderWidth: 2, borderColor: child.studentId === selectedChildId ? '#3578e5' : 'transparent' }
+              ]}
+              onPress={() => setSelectedChildId(child.studentId)}
+              activeOpacity={0.8}
+            >
+              <Image
+                source={child.avatar ? { uri: child.avatar } : require('../../assets/icon.png')}
+                style={styles.childAvatar}
+              />
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={styles.childName}>{child.fullName}</Text>
+                <Text style={styles.detailText}>Mã học sinh: {child.studentCode}</Text>
+                <Text style={styles.detailText}>Lớp: {child.className}</Text>
+              </View>
+              {child.studentId === selectedChildId && (
+                <TouchableOpacity onPress={() => (navigation as any).navigate('ChildrenDetail', { child })} style={styles.selectBtn}>
+                  <Text style={{ color: '#3578e5', fontWeight: 'bold' }}>Xem chi tiết</Text>
+                </TouchableOpacity>
+              )}
+            </TouchableOpacity>
           ))}
         </View>
+      )}
+
+      {/* Grid features + settings icon */}
+      <View style={styles.grid}>
+        {features.map((item, idx) => (
+          <View style={styles.gridItem} key={idx}>
+            {item.icon}
+            <Text style={styles.gridLabel}>{item.label}</Text>
+          </View>
+        ))}
       </View>
     </View>
   );
@@ -100,7 +124,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 18,
-    marginTop: -28,
+    marginTop: 12,
     padding: 12,
     shadowColor: '#000',
     shadowOpacity: 0.07,
@@ -132,17 +156,11 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     marginLeft: 8,
   },
-  gridWrap: {
-    marginTop: 18,
-    marginHorizontal: 10,
-    position: 'relative',
-    paddingTop: 16,
-  },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 38,
+    marginTop: 18,
     marginHorizontal: 8,
   },
   gridItem: {

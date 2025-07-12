@@ -1,7 +1,7 @@
 import axios, { InternalAxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = 'https://localhost:7299/api'; // Thay đổi URL API của bạn
+const BASE_URL = 'http://192.168.1.9:5239/api/'; 
 
 const api = axios.create({
   baseURL: BASE_URL,

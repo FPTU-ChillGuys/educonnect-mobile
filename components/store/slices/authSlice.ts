@@ -6,6 +6,7 @@ interface AuthState {
   token: string | null;
   isLoading: boolean;
   error: string | null;
+  children: any[];
 }
 
 const initialState: AuthState = {
@@ -13,6 +14,7 @@ const initialState: AuthState = {
   token: null,
   isLoading: false,
   error: null,
+  children: [],
 };
 
 const authSlice = createSlice({
@@ -23,10 +25,11 @@ const authSlice = createSlice({
       state.isLoading = true;
       state.error = null;
     },
-    loginSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
+    loginSuccess: (state, action: PayloadAction<{ user: User; token: string; children?: any[] }>) => {
       state.isLoading = false;
       state.user = action.payload.user;
       state.token = action.payload.token;
+      state.children = action.payload.children || [];
       state.error = null;
     },
     loginFailure: (state, action: PayloadAction<string>) => {
@@ -37,6 +40,7 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.error = null;
+      state.children = [];
     },
     updateUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;

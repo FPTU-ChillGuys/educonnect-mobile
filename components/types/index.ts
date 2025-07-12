@@ -13,6 +13,9 @@ export interface User {
   email: string;
   name: string;
   avatar?: string;
+  fullName?: string;
+  phoneNumber?: string;
+  location?: string;
 }
 
 export interface ApiResponse<T> {

@@ -18,6 +18,8 @@ import VerificationScreen from '../screens/VerificationScreen';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import NotifyDetailScreen from '../screens/NotifyDetailScreen';
 import ScheduleScreen from '../screens/ScheduleScreen';
+import ChildrenDetailScreen from '../screens/ChildrenDetailScreen';
+import DeviceInfoScreen from '../screens/DeviceInfoScreen';
 
 // Import theme and constants
 import { colors } from '../styles/theme';
@@ -35,6 +37,7 @@ const ProfileStack = () => {
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
       <Stack.Screen name="Verification" component={VerificationScreen} />
       <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+      <Stack.Screen name="DeviceInfo" component={DeviceInfoScreen} />
     </Stack.Navigator>
   );
 };
@@ -44,6 +47,15 @@ const BookmarksStack = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="BookmarksMain" component={BookmarksScreen} />
       <Stack.Screen name="NotifyDetail" component={NotifyDetailScreen} />
+    </Stack.Navigator>
+  );
+};
+
+const HomeStack = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="HomeMain" component={HomeScreen} />
+      <Stack.Screen name="ChildrenDetail" component={ChildrenDetailScreen} />
     </Stack.Navigator>
   );
 };
@@ -90,7 +102,7 @@ const AppNavigator = () => {
         tabBarShowLabel: false,
       })}
     >
-      <Tab.Screen name={NAVIGATION.HOME} component={HomeScreen} />
+      <Tab.Screen name={NAVIGATION.HOME} component={HomeStack} />
       <Tab.Screen name={NAVIGATION.BOOKMARKS} component={BookmarksStack} />
       <Tab.Screen
         name={NAVIGATION.CHATBOT}

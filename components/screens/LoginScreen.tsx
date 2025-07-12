@@ -1,13 +1,84 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Switch } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Switch, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../services/api';
+import { loginStart, loginSuccess, loginFailure } from '../store/slices/authSlice';
+import { API_ENDPOINTS, STORAGE_KEYS } from '../utils/constants';
+import { RootState } from '../store';
+import { jwtDecode } from 'jwt-decode';
+import { registerForPushNotificationsAsync } from '../services/notificationHelper';
+
+const BASE_URL = 'http://192.168.1.8:5239/';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const dispatch = useDispatch();
   const navigation = useNavigation();
+  const { isLoading, error } = useSelector((state: RootState) => state.auth);
+
+  const handleLogin = async () => {
+    dispatch(loginStart());
+    try {
+      // Fix cứng deviceToken là null
+      const deviceToken = null;
+      const response: any = await api.post(API_ENDPOINTS.LOGIN, { email, password, deviceToken });
+      if (response?.success && response?.data) {
+        const { accessToken, refreshToken } = response.data;
+        await AsyncStorage.setItem(STORAGE_KEYS.TOKEN, accessToken);
+        await AsyncStorage.setItem('refreshToken', refreshToken);
+        // Giải mã token lấy userId từ claim nameidentifier
+        let userId = '';
+        try {
+          const decoded: any = jwtDecode(accessToken);
+          userId = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || '';
+        } catch (e) {
+          dispatch(loginFailure('Token không hợp lệ'));
+          return;
+        }
+        if (!userId) {
+          dispatch(loginFailure('Không tìm thấy userId trong token!'));
+          return;
+        }
+        try {
+          const userProfile = await api.get(`user/${userId}`);
+          // Lấy danh sách children
+          let children: any[] = [];
+          try {
+            const childrenRes = await api.get(`student/parent/${userId}/childrens`);
+            console.log('API childrenRes:', childrenRes.data);
+            children = Array.isArray(childrenRes.data) ? childrenRes.data : (childrenRes.data?.data || []);
+            console.log('Children after API:', children);
+          } catch (e) {
+            // Nếu lỗi vẫn tiếp tục, children sẽ là []
+          }
+          dispatch(loginSuccess({ user: userProfile.data, token: accessToken, children }));
+          navigation.navigate('ProfileMain' as never);
+        } catch (e: any) {
+          dispatch(loginFailure(e?.response?.data?.message || 'Không lấy được thông tin người dùng!'));
+        }
+      } else {
+        const errorMsg = response?.message === 'User not found'
+          ? 'Tài khoản không tồn tại'
+          : response?.message || 'Đăng nhập thất bại';
+        dispatch(loginFailure(errorMsg));
+      }
+    } catch (err: any) {
+      let msg = 'Đăng nhập thất bại';
+      if (err?.response?.data?.message) {
+        msg = err.response.data.message;
+      } else if (typeof err?.response?.data === 'string') {
+        msg = err.response.data;
+      } else if (err?.message) {
+        msg = err.message;
+      }
+      dispatch(loginFailure(msg));
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -48,8 +119,10 @@ const LoginScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.loginButton}>
-        <Text style={styles.loginButtonText}>Đăng Nhập</Text>
+      {error && <Text style={{ color: 'yellow', marginBottom: 10 }}>{error}</Text>}
+
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={isLoading}>
+        <Text style={styles.loginButtonText}>{isLoading ? 'Đang đăng nhập...' : 'Đăng Nhập'}</Text>
       </TouchableOpacity>
     </View>
   );
